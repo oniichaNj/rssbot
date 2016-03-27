@@ -6,5 +6,5 @@
 "Realname": "rss",
 "Nick": "RSSbot",
 "Prefix": "~",
-"RSS": ["http://www.cnn.com/services/rss/", "https://www.nytimes.com/rss"]
+    "RSS": ["https://swehack.org/feed.php", "http://fb-rss.csfeed.org/fb-rss.xml", "http://www.sweclockers.com/feeds/nyheter"]
 }
