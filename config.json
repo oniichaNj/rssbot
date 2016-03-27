@@ -6,5 +6,5 @@
 "Realname": "rss",
 "Nick": "RSSbot",
 "Prefix": "~",
-"RSS": ["http://grocid.net/feed/", "https://swehack.org/feed.php", "https://news.ycombinator.com/rss", "https://chloe.re/rss/"]
+"RSS": ["http://grocid.net/feed/", "https://swehack.org/feed.php", "https://chloe.re/rss/"]
 }

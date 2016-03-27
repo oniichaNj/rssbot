@@ -87,9 +87,9 @@ func main() {
 						f.Update()
 						if f.Unread > 0 {
 							// at least one more new item
-							for i := 0; i < int(f.Unread); i++ {
+							for i := 0; i <= int(f.Unread); i++ {
 								conn.Privmsg(e.Arguments[0], fmt.Sprintf("%s - %s\n", f.Items[i].Title, f.Items[i].Link))
-								
+								//fmt.Printf("%s - %s\n", f.Items[i].Title, f.Items[i].Link)
 							}
 							f.Unread = 0
 						} 
@@ -109,7 +109,7 @@ func main() {
 					f.Update()
 					if f.Unread > 0 {
 						// at least one more new item
-						for i := 0; i < int(f.Unread); i++ {
+						for i := 0; i <= int(f.Unread); i++ {
 							for _, channel := range config.Channels {
 								conn.Privmsg(channel, fmt.Sprintf("%s - %s\n", f.Items[i].Title, f.Items[i].Link))
 							}
