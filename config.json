@@ -1,0 +1,10 @@
+{
+"Server": "irc.swehack.org:6697",
+"SSL": true,
+"InsecureSkipVerify": true,
+"Channels": ["#swehack-rss"],
+"Realname": "rss",
+"Nick": "RSSbot",
+"Prefix": "~",
+"RSS": ["http://www.cnn.com/services/rss/", "https://www.nytimes.com/rss"]
+}
