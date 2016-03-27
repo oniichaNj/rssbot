@@ -10,7 +10,7 @@ Secondly, you need to set a `$GOPATH`. I suggest using `~/.go`. Do this by addin
 ```
 set -x GOPATH $HOME/.go/
 set -gx PATH  $HOME/.go/bin/ $PATH
-``
+```
 to your `~/.config/config.fish` or equivilant to your shell rc file.
 
 This also adds the ~/.go/bin/ folder to your $PATH which is useful for some.
