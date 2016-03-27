@@ -45,19 +45,25 @@ func main() {
 		}
 	}
 
-	var feeds []rss.Feed
+	var feeds [](*rss.Feed)
 	for _, rssfeed := range config.RSS {
 		feed, err := rss.Fetch(rssfeed)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		feeds = append(feeds, *feed)
+		feeds = append(feeds, feed)
+	}
+	fmt.Printf("%p\n", feeds[0])
+	for _, f := range feeds {
+		f.Update()
+		for _, item := range f.Items {
+			fmt.Printf("%s - %s\n", item.Title, item.Link)
+			f.Unread--
+		}
+		fmt.Println("Unread counters: ", f.Unread)		
 	}
 
-	for i, _ := range feeds {
-		feeds[i].Update()
-	}
 	
 	// Connect to IRC server.
 	err = conn.Connect(config.Server)
@@ -78,25 +84,17 @@ func main() {
 		go func(e *irc.Event){
 			if strings.HasPrefix(e.Message(), config.Prefix) {
 				if stringInSlice(e.Arguments[0], config.Channels) {
-					for i, _ := range feeds {
-						feeds[i].Update()
-					}
-					// beware, magic numbers
-					for _, feed := range feeds {
-						fmt.Printf("\nfeed.Unread: %d\n", feed.Unread)
-						if int(feed.Unread) < 5 {
-							for i := 0; i < int(feed.Unread); i++ {
-								conn.Privmsg(e.Arguments[0], feed.Items[i].Title + " - " + feed.Items[i].Link)
-								feed.Unread--
+					for _, f := range feeds {
+						f.Update()
+						fmt.Println("Just updated - new unread count is ", f.Unread)
+						if f.Unread > 0 {
+							// at least one more new item
+							for i := 0; i < int(f.Unread); i++ {
+								conn.Privmsg(e.Arguments[0], fmt.Sprintf("%s - %s\n", f.Items[i].Title, f.Items[i].Link))
+								
 							}
-						} else {
-							// read all, this is all part of the anti-spamming "feature"
-							for i := 0; i < int(feed.Unread); i++ {
-								fmt.Println(feed.Items[i].Title + " - " + feed.Items[i].Link)
-								feed.Unread--
-							}
-
-						}
+							f.Unread = 0
+						} 
 					}
 				}
 			}
@@ -109,27 +107,20 @@ func main() {
 		for {
 			select {
 			case <- ticker.C:
-				for i, _ := range feeds {
-					feeds[i].Update()
-				}
-				for _, feed := range feeds {
-					fmt.Printf("\nfeed.Unread: %d\n", feed.Unread)
-					if int(feed.Unread) < 10 {
-						for i := 0; i < int(feed.Unread); i++ {
+				for _, f := range feeds {
+					fmt.Println("Pre update - unread is", f.Unread)
+					f.Update()
+					fmt.Println("Post update - unread is", f.Unread)
+					if f.Unread > 0 {
+						// at least one more new item
+						for i := 0; i < int(f.Unread); i++ {
 							for _, channel := range config.Channels {
-								conn.Privmsg(channel, feed.Items[i].Title + " - " + feed.Items[i].Link)
-								feed.Unread--
+								conn.Privmsg(channel, fmt.Sprintf("%s - %s\n", f.Items[i].Title, f.Items[i].Link))
 							}
 						}
-					} else {
-						// read all, this is all part of the anti-spamming "feature"
-						for i := 0; i < int(feed.Unread); i++ {
-							fmt.Println(channel, feed.Items[i].Title + " - " + feed.Items[i].Link)
-							feed.Unread--
-						}
-						
+						f.Unread = 0
 					}
-				}		
+				}
 			case <- quit:
 				ticker.Stop()
 				return
