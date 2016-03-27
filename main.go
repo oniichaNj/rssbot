@@ -3,14 +3,12 @@ package main
 import (
 	"fmt"
 	"github.com/thoj/go-ircevent"
-	"net/http"
 	"os"
 	"time"
 	"encoding/json"
 	"crypto/tls"
 	"strings"
 	"github.com/SlyMarbo/rss"
-	"io/ioutil"
 )
 
 type Config struct {
@@ -85,15 +83,19 @@ func main() {
 					}
 					// beware, magic numbers
 					for _, feed := range feeds {
-						if feed.Unread < 5 {
-							for i, _ := range feed.Items {
-								s, err := urlshorten(feed.Items[i].Link)
-								if err != nil {
-									fmt.Println("Couldn't shorten url: ", err)
-								} else {
-									conn.Privmsg(e.Arguments[0], feed.Items[i].Title + " - " + s)
-								}
+						fmt.Printf("\nfeed.Unread: %d\n", feed.Unread)
+						if int(feed.Unread) < 5 {
+							for i := 0; i < int(feed.Unread); i++ {
+								conn.Privmsg(e.Arguments[0], feed.Items[i].Title + " - " + feed.Items[i].Link)
+								feed.Unread--
 							}
+						} else {
+							// read all, this is all part of the anti-spamming "feature"
+							for i := 0; i < int(feed.Unread); i++ {
+								fmt.Println(feed.Items[i].Title + " - " + feed.Items[i].Link)
+								feed.Unread--
+							}
+
 						}
 					}
 				}
@@ -111,17 +113,21 @@ func main() {
 					feeds[i].Update()
 				}
 				for _, feed := range feeds {
-					if feed.Unread < 10 {
-						for i, _ := range feed.Items {
+					fmt.Printf("\nfeed.Unread: %d\n", feed.Unread)
+					if int(feed.Unread) < 10 {
+						for i := 0; i < int(feed.Unread); i++ {
 							for _, channel := range config.Channels {
-								s, err := urlshorten(feed.Items[i].Link)
-								if err != nil {
-									fmt.Println("Couldn't shorten url: ", err)
-								} else {
-									conn.Privmsg(channel, feed.Items[i].Title + " - " + s)
-								}
+								conn.Privmsg(channel, feed.Items[i].Title + " - " + feed.Items[i].Link)
+								feed.Unread--
 							}
 						}
+					} else {
+						// read all, this is all part of the anti-spamming "feature"
+						for i := 0; i < int(feed.Unread); i++ {
+							fmt.Println(channel, feed.Items[i].Title + " - " + feed.Items[i].Link)
+							feed.Unread--
+						}
+						
 					}
 				}		
 			case <- quit:
@@ -132,9 +138,9 @@ func main() {
 	}()
 	conn.Loop()
 }
-
+/*
 func urlshorten(url string) (string, error) {
-	//https://is.gd/create.php?format=simple&url=www.example.com
+	//Turns out these guys rate limit aggressively.
 	resp, err := http.Get("https://is.gd/create.php?format=simple&url=" + url)
 	if err != nil {
 		return "", err
@@ -146,7 +152,7 @@ func urlshorten(url string) (string, error) {
 	}
 	return string(body), nil
 }
-
+*/
 func stringInSlice(a string, list []string) bool {
 	for _, b := range list {
 		if b == a {
