@@ -54,14 +54,13 @@ func main() {
 		}
 		feeds = append(feeds, feed)
 	}
-	fmt.Printf("%p\n", feeds[0])
 	for _, f := range feeds {
+		
 		f.Update()
 		for _, item := range f.Items {
 			fmt.Printf("%s - %s\n", item.Title, item.Link)
 			f.Unread--
 		}
-		fmt.Println("Unread counters: ", f.Unread)		
 	}
 
 	
@@ -86,7 +85,6 @@ func main() {
 				if stringInSlice(e.Arguments[0], config.Channels) {
 					for _, f := range feeds {
 						f.Update()
-						fmt.Println("Just updated - new unread count is ", f.Unread)
 						if f.Unread > 0 {
 							// at least one more new item
 							for i := 0; i < int(f.Unread); i++ {
@@ -108,9 +106,7 @@ func main() {
 			select {
 			case <- ticker.C:
 				for _, f := range feeds {
-					fmt.Println("Pre update - unread is", f.Unread)
 					f.Update()
-					fmt.Println("Post update - unread is", f.Unread)
 					if f.Unread > 0 {
 						// at least one more new item
 						for i := 0; i < int(f.Unread); i++ {
